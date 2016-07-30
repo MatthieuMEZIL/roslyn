@@ -32,9 +32,9 @@ namespace Microsoft.CodeAnalysis.CSharp
 
         protected SyntaxNode Original { get; private set; }
 
-        protected virtual SkipVisitor Skip
+        protected virtual SkipRewrite Skip(SyntaxNodeOrToken nodeOrToken)
         {
-            get { return null; }
+            return default(SkipRewrite);
         }
 
         public virtual SyntaxNode VisitNode(SyntaxNode original, SyntaxNode rewritten)
@@ -86,9 +86,8 @@ namespace Microsoft.CodeAnalysis.CSharp
                     }
                     else
                     {
-                        SkipRewrite skip;
-                        if (this.Skip != null
-                            && (skip = ((CSharpSyntaxNode)node).Accept(this.Skip)).Skip)
+                        SkipRewrite skip = this.Skip(nodeOrToken);
+                        if (skip.Skip)
                         {
                             _transformedStack.Push(skip.Rewriten);
                         }
@@ -114,8 +113,8 @@ namespace Microsoft.CodeAnalysis.CSharp
                 {
                     // we can transform tokens immediately
                     var original = nodeOrToken.AsToken();
-                    SkipRewrite skip;
-                    if (this.Skip != null && (skip = this.Skip.VisitToken(original)).Skip)
+                    SkipRewrite skip = this.Skip(nodeOrToken);
+                    if (skip.Skip)
                     {
                         _transformedStack.Push(skip.Rewriten);
                     }
@@ -190,14 +189,6 @@ namespace Microsoft.CodeAnalysis.CSharp
             {
                 this.Skip = skip;
                 this.Rewriten = rewriten;
-            }
-        }
-
-        protected class SkipVisitor : CSharpSyntaxVisitor<SkipRewrite>
-        {
-            public virtual SkipRewrite VisitToken(SyntaxToken token)
-            {
-                return default(SkipRewrite);
             }
         }
 

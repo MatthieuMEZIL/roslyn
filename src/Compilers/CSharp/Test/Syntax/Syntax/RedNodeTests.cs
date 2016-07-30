@@ -40,11 +40,9 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
 
         private class SkippedNonRecursiveRewriter : CSharpNonRecursiveSyntaxRewriter
         {
-            private SkipLiteralNonRecursiveRewriter _skipRewriter = new SkipLiteralNonRecursiveRewriter();
-
-            protected override SkipVisitor Skip
+            protected override SkipRewrite Skip(SyntaxNodeOrToken nodeOrToken)
             {
-                get { return _skipRewriter; }
+                return nodeOrToken.IsNode && nodeOrToken.AsNode() is LiteralExpressionSyntax ? new SkipRewrite(skip: true, rewriten: nodeOrToken) : base.Skip(nodeOrToken);
             }
 
             public int VisitNodeCallsCount { get; private set; }
@@ -53,14 +51,6 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
             {
                 this.VisitNodeCallsCount++;
                 return base.VisitNode(original, rewritten);
-            }
-
-            private class SkipLiteralNonRecursiveRewriter : SkipVisitor
-            {
-                public override SkipRewrite VisitLiteralExpression(LiteralExpressionSyntax node)
-                {
-                    return new SkipRewrite(true, node);
-                }
             }
         }
 
@@ -68,9 +58,9 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
         {
             private SkipLiteralNonRecursiveRewriter _skipRewriter = new SkipLiteralNonRecursiveRewriter();
 
-            protected override SkipVisitor Skip
+            protected override SkipRewrite Skip(SyntaxNodeOrToken nodeOrToken)
             {
-                get { return _skipRewriter; }
+                return nodeOrToken.IsNode ? _skipRewriter.Visit(nodeOrToken.AsNode()) : base.Skip(nodeOrToken);
             }
 
             public int VisitNodeCallsCount { get; private set; }
@@ -81,7 +71,7 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
                 return base.VisitNode(original, rewritten);
             }
 
-            private class SkipLiteralNonRecursiveRewriter : SkipVisitor
+            private class SkipLiteralNonRecursiveRewriter : CSharpSyntaxVisitor<SkipRewrite>
             {
                 public override SkipRewrite VisitLiteralExpression(LiteralExpressionSyntax node)
                 {
@@ -145,8 +135,9 @@ namespace Microsoft.CodeAnalysis.CSharp.UnitTests
             string code = "1 + 2 + 3";
             ExpressionSyntax expression = SyntaxFactory.ParseExpression(code);
             var skippedNonRecursiveRewriter = new SkippedNonRecursiveRewriter();
-            skippedNonRecursiveRewriter.Visit(expression);
+            var newExpression = skippedNonRecursiveRewriter.Visit(expression);
             Assert.Equal(2, skippedNonRecursiveRewriter.VisitNodeCallsCount);
+            Assert.Equal(expression, newExpression);
         }
 
         [Fact]

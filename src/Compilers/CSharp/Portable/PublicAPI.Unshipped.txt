@@ -6,8 +6,6 @@ Microsoft.CodeAnalysis.CSharp.CSharpNonRecursiveSyntaxRewriter.SkipRewrite
 Microsoft.CodeAnalysis.CSharp.CSharpNonRecursiveSyntaxRewriter.SkipRewrite.Rewriten.get -> Microsoft.CodeAnalysis.SyntaxNodeOrToken
 Microsoft.CodeAnalysis.CSharp.CSharpNonRecursiveSyntaxRewriter.SkipRewrite.Skip.get -> bool
 Microsoft.CodeAnalysis.CSharp.CSharpNonRecursiveSyntaxRewriter.SkipRewrite.SkipRewrite(bool skip, Microsoft.CodeAnalysis.SyntaxNodeOrToken rewriten) -> void
-Microsoft.CodeAnalysis.CSharp.CSharpNonRecursiveSyntaxRewriter.SkipVisitor
-Microsoft.CodeAnalysis.CSharp.CSharpNonRecursiveSyntaxRewriter.SkipVisitor.SkipVisitor() -> void
 Microsoft.CodeAnalysis.CSharp.CSharpNonRecursiveSyntaxWalker
 Microsoft.CodeAnalysis.CSharp.CSharpNonRecursiveSyntaxWalker.CSharpNonRecursiveSyntaxWalker() -> void
 Microsoft.CodeAnalysis.CSharp.CSharpParseOptions.CSharpParseOptions(Microsoft.CodeAnalysis.CSharp.LanguageVersion languageVersion = Microsoft.CodeAnalysis.CSharp.LanguageVersion.CSharp7, Microsoft.CodeAnalysis.DocumentationMode documentationMode = Microsoft.CodeAnalysis.DocumentationMode.Parse, Microsoft.CodeAnalysis.SourceCodeKind kind = Microsoft.CodeAnalysis.SourceCodeKind.Regular, System.Collections.Generic.IEnumerable<string> preprocessorSymbols = null) -> void
@@ -241,8 +239,7 @@ static Microsoft.CodeAnalysis.CSharp.SyntaxFactory.VariableDeclaration(Microsoft
 static Microsoft.CodeAnalysis.CSharp.SyntaxFactory.VariableDeclaration(Microsoft.CodeAnalysis.CSharp.Syntax.VariableDeconstructionDeclaratorSyntax deconstructionDeclaration) -> Microsoft.CodeAnalysis.CSharp.Syntax.VariableDeclarationSyntax
 static Microsoft.CodeAnalysis.CSharp.SyntaxFactory.WhenClause(Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax condition) -> Microsoft.CodeAnalysis.CSharp.Syntax.WhenClauseSyntax
 static Microsoft.CodeAnalysis.CSharp.SyntaxFactory.WhenClause(Microsoft.CodeAnalysis.SyntaxToken whenKeyword, Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax condition) -> Microsoft.CodeAnalysis.CSharp.Syntax.WhenClauseSyntax
-virtual Microsoft.CodeAnalysis.CSharp.CSharpNonRecursiveSyntaxRewriter.Skip.get -> Microsoft.CodeAnalysis.CSharp.CSharpNonRecursiveSyntaxRewriter.SkipVisitor
-virtual Microsoft.CodeAnalysis.CSharp.CSharpNonRecursiveSyntaxRewriter.SkipVisitor.VisitToken(Microsoft.CodeAnalysis.SyntaxToken token) -> Microsoft.CodeAnalysis.CSharp.CSharpNonRecursiveSyntaxRewriter.SkipRewrite
+virtual Microsoft.CodeAnalysis.CSharp.CSharpNonRecursiveSyntaxRewriter.Skip(Microsoft.CodeAnalysis.SyntaxNodeOrToken nodeOrToken) -> Microsoft.CodeAnalysis.CSharp.CSharpNonRecursiveSyntaxRewriter.SkipRewrite
 virtual Microsoft.CodeAnalysis.CSharp.CSharpNonRecursiveSyntaxRewriter.VisitNode(Microsoft.CodeAnalysis.SyntaxNode original, Microsoft.CodeAnalysis.SyntaxNode rewritten) -> Microsoft.CodeAnalysis.SyntaxNode
 virtual Microsoft.CodeAnalysis.CSharp.CSharpNonRecursiveSyntaxRewriter.VisitToken(Microsoft.CodeAnalysis.SyntaxToken original, Microsoft.CodeAnalysis.SyntaxToken rewritten) -> Microsoft.CodeAnalysis.SyntaxToken
 virtual Microsoft.CodeAnalysis.CSharp.CSharpNonRecursiveSyntaxRewriter.VisitTrivia(Microsoft.CodeAnalysis.SyntaxTrivia original, Microsoft.CodeAnalysis.SyntaxTrivia rewritten) -> Microsoft.CodeAnalysis.SyntaxTrivia
