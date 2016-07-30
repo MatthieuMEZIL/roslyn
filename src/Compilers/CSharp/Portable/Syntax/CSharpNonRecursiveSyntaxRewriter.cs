@@ -32,6 +32,11 @@ namespace Microsoft.CodeAnalysis.CSharp
 
         protected SyntaxNode Original { get; private set; }
 
+        protected virtual SkipVisitor Skip
+        {
+            get { return null; }
+        }
+
         public virtual SyntaxNode VisitNode(SyntaxNode original, SyntaxNode rewritten)
         {
             return ((CSharpSyntaxNode)rewritten).Accept(this);
@@ -81,28 +86,45 @@ namespace Microsoft.CodeAnalysis.CSharp
                     }
                     else
                     {
-                        // deconstruct node into child elements
-                        _children.Clear();
-                        _deconstructor.Deconstruct(node, _children);
-
-                        // add child elements to undeconstructed stack in reverse order so
-                        // the first child gets operated on next
-                        for (int i = _children.Count - 1; i >= 0; i--)
+                        SkipRewrite skip;
+                        if (this.Skip != null
+                            && (skip = ((CSharpSyntaxNode)node).Accept(this.Skip)).Skip)
                         {
-                            _undeconstructedStack.Push(_children[i]);
+                            _transformedStack.Push(skip.Rewriten);
                         }
+                        else
+                        {
+                            // deconstruct node into child elements
+                            _children.Clear();
+                            _deconstructor.Deconstruct(node, _children);
 
-                        // remember the node that will be tranformed later after the children are transformed
-                        _untransformedStack.Push(new UntransformedNode(node, _children.Count, _transformedStack.Count));
+                            // add child elements to undeconstructed stack in reverse order so
+                            // the first child gets operated on next
+                            for (int i = _children.Count - 1; i >= 0; i--)
+                            {
+                                _undeconstructedStack.Push(_children[i]);
+                            }
+
+                            // remember the node that will be tranformed later after the children are transformed
+                            _untransformedStack.Push(new UntransformedNode(node, _children.Count, _transformedStack.Count));
+                        }
                     }
                 }
                 else if (nodeOrToken.IsToken)
                 {
                     // we can transform tokens immediately
                     var original = nodeOrToken.AsToken();
-                    var rewritten = _trivializer.VisitToken(original); // rewrite trivia
-                    var transformed = this.VisitToken(original, rewritten);
-                    _transformedStack.Push(transformed);
+                    SkipRewrite skip;
+                    if (this.Skip != null && (skip = this.Skip.VisitToken(original)).Skip)
+                    {
+                        _transformedStack.Push(skip.Rewriten);
+                    }
+                    else
+                    {
+                        var rewritten = _trivializer.VisitToken(original); // rewrite trivia
+                        var transformed = this.VisitToken(original, rewritten);
+                        _transformedStack.Push(transformed);
+                    }
                 }
 
                 // transform any nodes that can be transformed now
@@ -159,13 +181,29 @@ namespace Microsoft.CodeAnalysis.CSharp
             }
         }
 
+        protected struct SkipRewrite
+        {
+            public bool Skip { get; }
+            public SyntaxNodeOrToken Rewriten { get; }
+
+            public SkipRewrite(bool skip, SyntaxNodeOrToken rewriten)
+            {
+                this.Skip = skip;
+                this.Rewriten = rewriten;
+            }
+        }
+
+        protected class SkipVisitor : CSharpSyntaxVisitor<SkipRewrite>
+        {
+            public virtual SkipRewrite VisitToken(SyntaxToken token)
+            {
+                return default(SkipRewrite);
+            }
+        }
+
         private class NodeDeconstructor : CSharpSyntaxRewriter
         {
             private List<SyntaxNodeOrToken> _elements;
-
-            public NodeDeconstructor()
-            {
-            }
 
             public void Deconstruct(SyntaxNode node, List<SyntaxNodeOrToken> elements)
             {
@@ -190,10 +228,6 @@ namespace Microsoft.CodeAnalysis.CSharp
         {
             private List<SyntaxNodeOrToken> _elements;
             private int _index;
-
-            public NodeReassembler()
-            {
-            }
 
             public SyntaxNodeOrToken Reassemble(SyntaxNodeOrToken original, List<SyntaxNodeOrToken> rewrittenElements)
             {
